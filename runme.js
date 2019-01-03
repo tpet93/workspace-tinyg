@@ -36,14 +36,14 @@ http.createServer(function(req, res) {
     });
 
     //var html = getMainPage();
-    var htmlDocs = generateworkspaceDocs();
+    var htmlDocs = generateWidgetDocs();
     
     var notes = "";
-    notes += "<p>Click refresh to regenerate README.md, auto-generated-workspace.html, and push updates to Github.</p>";
-    generateworkspaceReadme();
+    notes += "<p>Click refresh to regenerate README.md, auto-generated-widget.html, and push updates to Github.</p>";
+    generateWidgetReadme();
     notes += "<p>Generated a new README.md file...</p>";
     generateInlinedFile();
-    notes += "<p>Generated a new auto-generated-workspace.html file...</p>";
+    notes += "<p>Generated a new auto-generated-widget.html file...</p>";
     //pushToGithub();
     //pushToGithubSync();
     pushToGithubAsync();
@@ -213,29 +213,29 @@ String.prototype.regexIndexOf = function(regex, startpos) {
     return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
 }
 
-var workspaceSrc, workspace, id, deps, cpdefine, requirejs, cprequire_test;
-var workspaceDocs = {};
+var widgetSrc, widget, id, deps, cpdefine, requirejs, cprequire_test;
+var widgetDocs = {};
 
 /**
- * This method will actually eval your workspace.js to bring it into memory
+ * This method will actually eval your widget.js to bring it into memory
  * so it can be iterated and parsed using standard javascript. This lets
  * us generate docs. If your js doesn't eval, this method will crash.
  */
 var isEvaled = false;
-var evalworkspaceJs = function() {
+var evalWidgetJs = function() {
   
   if (isEvaled) return;
   
-  // This method reads in your workspace.js and evals it to
+  // This method reads in your widget.js and evals it to
   // figure out all the info from it to generate docs and sample
   // code to make your life easy
-  workspaceSrc = fs.readFileSync('workspace.js')+'';
+  widgetSrc = fs.readFileSync('workspace.js')+'';
   
   // fill in some auto fill stuff
   /*
-  var workspaceUrl = 'http://' +
+  var widgetUrl = 'http://' +
     process.env.C9_PROJECT + '-' + process.env.C9_USER +
-    '.c9users.io/workspace.html';
+    '.c9users.io/widget.html';
   var editUrl = 'http://ide.c9.io/' +
     process.env.C9_USER + '/' +
     process.env.C9_PROJECT;
@@ -245,23 +245,23 @@ var evalworkspaceJs = function() {
 
   var reUrl = /(url\s*:\s*['"]?)\(auto fill by runme\.js\)/;
   //console.log("reUrl:", reUrl);
-  workspaceSrc = workspaceSrc.replace(reUrl, "$1" + urls.cpload);
-  workspaceSrc = workspaceSrc.replace(/(fiddleurl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.edit);
-  workspaceSrc = workspaceSrc.replace(/(githuburl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.github);
-  workspaceSrc = workspaceSrc.replace(/(testurl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.test);
+  widgetSrc = widgetSrc.replace(reUrl, "$1" + urls.cpload);
+  widgetSrc = widgetSrc.replace(/(fiddleurl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.edit);
+  widgetSrc = widgetSrc.replace(/(githuburl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.github);
+  widgetSrc = widgetSrc.replace(/(testurl\s*:\s*['"]?)\(auto fill by runme\.js\)/, "$1" + urls.test);
   
   // rewrite the javascript
-  //fs.writeFileSync('workspace.js', workspaceSrc);
+  //fs.writeFileSync('widget.js', widgetSrc);
   
-  eval(workspaceSrc);
-  //console.log("evaled the workspace.js");
+  eval(widgetSrc);
+  //console.log("evaled the widget.js");
   //isEvaled = true;
   
   // generate docs
-  for (var key in workspace) {
+  for (var key in widget) {
     
-    var obj = workspace[key];
-    workspaceDocs[key] = {
+    var obj = widget[key];
+    widgetDocs[key] = {
       type: typeof obj,
       property: false,
       method: false,
@@ -269,7 +269,7 @@ var evalworkspaceJs = function() {
       descHtml: "",
       descMd: "", // markdown
     };
-    var objDoc = workspaceDocs[key];
+    var objDoc = widgetDocs[key];
     
     if (typeof obj === 'function') {
 
@@ -283,8 +283,8 @@ var evalworkspaceJs = function() {
       
       // we have the source code for the function, so go find it, but then
       // look at the comments above it
-      //var indx = workspaceSrc.indexOf(obj.toString());
-      var indx = workspaceSrc.regexIndexOf(new RegExp(key + "\\s*?:\\s*?function"));
+      //var indx = widgetSrc.indexOf(obj.toString());
+      var indx = widgetSrc.regexIndexOf(new RegExp(key + "\\s*?:\\s*?function"));
       if (indx > 0) {
         
         //s += "found index " + indx;  
@@ -313,7 +313,7 @@ var evalworkspaceJs = function() {
       }
       
       // see if any docs in src code
-      var indx = workspaceSrc.regexIndexOf(new RegExp(key + "\\s*?:"));
+      var indx = widgetSrc.regexIndexOf(new RegExp(key + "\\s*?:"));
       if (indx > 0) {
         
         // extract docs from above this method
@@ -339,7 +339,7 @@ var evalworkspaceJs = function() {
       
       // look for description above or at end of line of source code
 
-      var indx = workspaceSrc.regexIndexOf(new RegExp(key + "\\s*?:"));
+      var indx = widgetSrc.regexIndexOf(new RegExp(key + "\\s*?:"));
       if (indx > 0) {
         
         // extract docs from above this method
@@ -361,7 +361,7 @@ var evalworkspaceJs = function() {
 }
 
 // We are passed in an indx which is where we start in the overall
-// workspaceSrc. We look backwards, i.e. line/lines above for comments
+// widgetSrc. We look backwards, i.e. line/lines above for comments
 var extractDocs = function(indx) {
   
   var o = {
@@ -372,16 +372,16 @@ var extractDocs = function(indx) {
   
   // if there is a */ up to this indx we've got a comment
   // reverse string to search backwards
-  var partial = workspaceSrc.substring(0, indx);
-  var workspaceSrcRev = reverseStr(partial);
-  //console.log("candidate for " + key + ":", workspaceSrcRev.substring(0, 100));
+  var partial = widgetSrc.substring(0, indx);
+  var widgetSrcRev = reverseStr(partial);
+  //console.log("candidate for " + key + ":", widgetSrcRev.substring(0, 100));
   
   // if the next item in rev str is /* then we have a comment
-  if (workspaceSrcRev.match(/^[\s\r\n]+\/\*/)) {
+  if (widgetSrcRev.match(/^[\s\r\n]+\/\*/)) {
     
     // search to **/ which is /**
-    var indx2 = workspaceSrcRev.indexOf("**/");
-    var comment = workspaceSrcRev.substring(0, indx2);
+    var indx2 = widgetSrcRev.indexOf("**/");
+    var comment = widgetSrcRev.substring(0, indx2);
     comment = reverseStr(comment);
     //console.log("comment for " + key + ":", comment);
     o.src = comment;
@@ -413,9 +413,9 @@ var extractDocs = function(indx) {
   return o;
 }
 
-// create our own version of cpdefine so we can use the evalworkspaceJs above
+// create our own version of cpdefine so we can use the evalWidgetJs above
 cpdefine = function(myid, mydeps, callback) {
-  workspace = callback();
+  widget = callback();
   id = myid;
   deps = mydeps;
   //console.log("cool, our own cpdefine got called. id:", id, "deps:", deps);
@@ -425,48 +425,48 @@ requirejs = function() {}
 requirejs.config = function() {};
 cprequire_test = function() {};
 
-var generateworkspaceReadme = function() {
+var generateWidgetReadme = function() {
 
   // First we have to eval so stuff is in memory
-  evalworkspaceJs();
+  evalWidgetJs();
   
   // Spit out Markdown docs
-  var md = `# $workspace-id
-$workspace-desc
+  var md = `# $widget-id
+$widget-desc
 
-$workspace-img
+$widget-img
 
-## ChiliPeppr $workspace-name
+## ChiliPeppr $widget-name
 
-All ChiliPeppr workspaces/elements are defined using cpdefine() which is a method
+All ChiliPeppr widgets/elements are defined using cpdefine() which is a method
 that mimics require.js. Each defined object must have a unique ID so it does
-not conflict with other ChiliPeppr workspaces.
+not conflict with other ChiliPeppr widgets.
 
 | Item                  | Value           |
 | -------------         | ------------- | 
-| ID                    | $workspace-id |
-| Name                  | $workspace-name |
-| Description           | $workspace-desc |
-| chilipeppr.load() URL | $workspace-cpurl |
-| Edit URL              | $workspace-editurl |
-| Github URL            | $workspace-giturl |
-| Test URL              | $workspace-testurl |
+| ID                    | $widget-id |
+| Name                  | $widget-name |
+| Description           | $widget-desc |
+| chilipeppr.load() URL | $widget-cpurl |
+| Edit URL              | $widget-editurl |
+| Github URL            | $widget-giturl |
+| Test URL              | $widget-testurl |
 
 ## Example Code for chilipeppr.load() Statement
 
-You can use the code below as a starting point for instantiating this workspace 
-inside a workspace or from another workspace. The key is that you need to load 
-your workspace inlined into a div so the DOM can parse your HTML, CSS, and 
-Javascript. Then you use cprequire() to find your workspace's Javascript and get 
+You can use the code below as a starting point for instantiating this widget 
+inside a workspace or from another widget. The key is that you need to load 
+your widget inlined into a div so the DOM can parse your HTML, CSS, and 
+Javascript. Then you use cprequire() to find your widget's Javascript and get 
 back the instance of it.
 
 \`\`\`javascript
-$workspace-cploadjs
+$widget-cploadjs
 \`\`\`
 
 ## Publish
 
-This workspace/element publishes the following signals. These signals are owned by this workspace/element and are published to all objects inside the ChiliPeppr environment that listen to them via the 
+This widget/element publishes the following signals. These signals are owned by this widget/element and are published to all objects inside the ChiliPeppr environment that listen to them via the 
 chilipeppr.subscribe(signal, callback) method. 
 To better understand how ChiliPeppr's subscribe() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
@@ -479,14 +479,14 @@ To better understand how ChiliPeppr's subscribe() method works see amplify.js's 
       </thead>
       <tbody>
       $row-publish-start    
-      <tr valign="top"><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr valign="top"><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-publish-end    
       </tbody>
   </table>
 
 ## Subscribe
 
-This workspace/element subscribes to the following signals. These signals are owned by this workspace/element. Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method. 
+This widget/element subscribes to the following signals. These signals are owned by this widget/element. Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method. 
 To better understand how ChiliPeppr's publish() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-sub" class="table table-bordered table-striped">
@@ -498,14 +498,14 @@ To better understand how ChiliPeppr's publish() method works see amplify.js's do
       </thead>
       <tbody>
       $row-subscribe-start    
-      <tr valign="top"><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr valign="top"><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-subscribe-end    
       </tbody>
   </table>
 
 ## Foreign Publish
 
-This workspace/element publishes to the following signals that are owned by other objects. 
+This widget/element publishes to the following signals that are owned by other objects. 
 To better understand how ChiliPeppr's subscribe() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-foreignpub" class="table table-bordered table-striped">
@@ -517,14 +517,14 @@ To better understand how ChiliPeppr's subscribe() method works see amplify.js's 
       </thead>
       <tbody>
       $row-foreign-publish-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-foreign-publish-end    
       </tbody>
   </table>
 
 ## Foreign Subscribe
 
-This workspace/element publishes to the following signals that are owned by other objects.
+This widget/element publishes to the following signals that are owned by other objects.
 To better understand how ChiliPeppr's publish() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-foreignsub" class="table table-bordered table-striped">
@@ -536,14 +536,14 @@ To better understand how ChiliPeppr's publish() method works see amplify.js's do
       </thead>
       <tbody>
       $row-foreign-subscribe-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-foreign-subscribe-end    
       </tbody>
   </table>
 
 ## Methods / Properties
 
-The table below shows, in order, the methods and properties inside the workspace/element.
+The table below shows, in order, the methods and properties inside the widget/element.
 
   <table id="com-chilipeppr-elem-methodsprops" class="table table-bordered table-striped">
       <thead>
@@ -555,7 +555,7 @@ The table below shows, in order, the methods and properties inside the workspace
       </thead>
       <tbody>
       $row-methods-start
-      <tr><td colspan="2">(No methods or properties defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No methods or properties defined in this widget/element)</td></tr>
       $row-methods-end
       </tbody>
   </table>
@@ -572,9 +572,9 @@ the serial port of your hardware like an Arduino or other microcontroller.
 
 You then create a workspace at ChiliPeppr.com that connects to your hardware 
 by starting from scratch or forking somebody else's
-workspace that is close to what you are after. Then you write workspaces in
+workspace that is close to what you are after. Then you write widgets in
 Javascript that interact with your hardware by forking the base template 
-workspace or forking another workspace that
+widget or forking another widget that
 is similar to what you are trying to build.
 
 ChiliPeppr is massively capable such that the workspaces for 
@@ -593,34 +593,34 @@ will you build on top of it?
 `;
 
   /*
-  var workspaceUrl = 'http://' +
+  var widgetUrl = 'http://' +
     process.env.C9_PROJECT + '-' + process.env.C9_USER +
-    '.c9users.io/workspace.html';
+    '.c9users.io/widget.html';
   var testUrl = 'https://preview.c9users.io/' +
     process.env.C9_USER + '/' +
-    process.env.C9_PROJECT + '/workspace.html';
+    process.env.C9_PROJECT + '/widget.html';
   var editUrl = 'http://ide.c9.io/' +
     process.env.C9_USER + '/' +
     process.env.C9_PROJECT;
   var github = getGithubUrl();
   */
 
-  md = md.replace(/\$workspace-id/g, workspace.id);
-  md = md.replace(/\$workspace-name/g, workspace.name);
-  md = md.replace(/\$workspace-desc/g, workspace.desc);
+  md = md.replace(/\$widget-id/g, widget.id);
+  md = md.replace(/\$widget-name/g, widget.name);
+  md = md.replace(/\$widget-desc/g, widget.desc);
   /*
-  md = md.replace(/\$workspace-cpurl/g, github.rawurl);
-  md = md.replace(/\$workspace-editurl/g, editUrl);
-  md = md.replace(/\$workspace-giturl/g, github.url);
-  md = md.replace(/\$workspace-testurl/g, testUrl);
+  md = md.replace(/\$widget-cpurl/g, github.rawurl);
+  md = md.replace(/\$widget-editurl/g, editUrl);
+  md = md.replace(/\$widget-giturl/g, github.url);
+  md = md.replace(/\$widget-testurl/g, testUrl);
   */
-  md = md.replace(/\$workspace-cpurl/g, workspace.url);
-  md = md.replace(/\$workspace-editurl/g, workspace.fiddleurl);
-  md = md.replace(/\$workspace-giturl/g, workspace.githuburl);
-  md = md.replace(/\$workspace-testurl/g, workspace.testurl);
+  md = md.replace(/\$widget-cpurl/g, widget.url);
+  md = md.replace(/\$widget-editurl/g, widget.fiddleurl);
+  md = md.replace(/\$widget-giturl/g, widget.githuburl);
+  md = md.replace(/\$widget-testurl/g, widget.testurl);
   
   var cpload = generateCpLoadStmt();
-  md = md.replace(/\$workspace-cploadjs/g, cpload);
+  md = md.replace(/\$widget-cploadjs/g, cpload);
 
   // see if there is a screenshot, if so use it
   var img = "";
@@ -628,46 +628,46 @@ will you build on top of it?
     img = "![alt text]" + 
     "(screenshot.png \"Screenshot\")";
   }
-  md = md.replace(/\$workspace-img/g, img);
+  md = md.replace(/\$widget-img/g, img);
 
   /*
   // now generate methods/properties
-  //$workspace-methprops
+  //$widget-methprops
   var s = "";
-  for (var key in workspace) {
-    var obj = workspace[key];
+  for (var key in widget) {
+    var obj = widget[key];
     s += '| ' + key +
       ' | ' + typeof obj +
       ' | ';
-    s += workspaceDocs[key].descHtml.replace(/[\r\n]/g, "");
+    s += widgetDocs[key].descHtml.replace(/[\r\n]/g, "");
     s += ' |\n';
   }
   //console.log("adding markdown:", s);
-  md = md.replace(/\$workspace-methprops/g, s);
+  md = md.replace(/\$widget-methprops/g, s);
 
 
   // now do pubsub signals
   var s;
-  s = appendKeyValForMarkdown(workspace.publish);
-  md = md.replace(/\$workspace-publish/, s);
-  s = appendKeyValForMarkdown(workspace.subscribe);
-  md = md.replace(/\$workspace-subscribe/, s);
-  s = appendKeyValForMarkdown(workspace.foreignPublish);
-  md = md.replace(/\$workspace-foreignpublish/, s);
-  s = appendKeyValForMarkdown(workspace.foreignSubscribe);
-  md = md.replace(/\$workspace-foreignsubscribe/, s);
+  s = appendKeyValForMarkdown(widget.publish);
+  md = md.replace(/\$widget-publish/, s);
+  s = appendKeyValForMarkdown(widget.subscribe);
+  md = md.replace(/\$widget-subscribe/, s);
+  s = appendKeyValForMarkdown(widget.foreignPublish);
+  md = md.replace(/\$widget-foreignpublish/, s);
+  s = appendKeyValForMarkdown(widget.foreignSubscribe);
+  md = md.replace(/\$widget-foreignsubscribe/, s);
   */
   
     // do the properties and methods
   var s = "";
-  for (var key in workspace) {
-    var txt = workspaceDocs[key].descHtml + '';
+  for (var key in widget) {
+    var txt = widgetDocs[key].descHtml + '';
     // get rid of spaces and returns after closing pre tags cuz it messes up github markdown
     txt = txt.replace(/<\/pre>[\s\r\n]*/ig, "</pre>");
     // convert double newlines to <br><br> tags
     txt = txt.replace(/\n\s*\n\s*/g, "<br><br>");
 
-    var obj = workspace[key];
+    var obj = widget[key];
     s += '<tr valign="top"><td>' + key +
       '</td><td>' + typeof obj +
       '</td><td>';
@@ -678,13 +678,13 @@ will you build on top of it?
 
   // now do pubsub signals
   var s;
-  s = appendKeyVal(workspace.publish);
+  s = appendKeyVal(widget.publish);
   md = md.replace(/\$row-publish-start[\s\S]+?\$row-publish-end/, s);
-  s = appendKeyVal(workspace.subscribe);
+  s = appendKeyVal(widget.subscribe);
   md = md.replace(/\$row-subscribe-start[\s\S]+?\$row-subscribe-end/g, s);
-  s = appendKeyVal(workspace.foreignPublish);
+  s = appendKeyVal(widget.foreignPublish);
   md = md.replace(/\$row-foreign-publish-start[\s\S]+?\$row-foreign-publish-end/, s);
-  s = appendKeyVal(workspace.foreignSubscribe);
+  s = appendKeyVal(widget.foreignSubscribe);
   md = md.replace(/\$row-foreign-subscribe-start[\s\S]+?\$row-foreign-subscribe-end/g, s);
 
   // now write out the auto-gen file
@@ -699,18 +699,18 @@ var appendKeyValForMarkdown = function(data, id) {
         
     //var keys = Object.keys(data);
     for (var key in data) {
-      str += '| /' + workspace.id + "" + key + ' | ' + data[key].replace(/\n/, "<br>") + ' |';
+      str += '| /' + widget.id + "" + key + ' | ' + data[key].replace(/\n/, "<br>") + ' |';
     }
   } else {
-    str = '| (No signals defined in this workspace/element) |';
+    str = '| (No signals defined in this widget/element) |';
   }
   return str;
 }
 
-var generateworkspaceDocs = function() {
+var generateWidgetDocs = function() {
   
   // First we have to eval so stuff is in memory
-  evalworkspaceJs();
+  evalWidgetJs();
   
   // Spit out docs
   var html = "";
@@ -975,7 +975,7 @@ var generateworkspaceDocs = function() {
         Results
       </div>
       
-      <p style="padding-top:20px;">Note: Paste image from clipboard here to generate screenshot of workspace for docs.</p>
+      <p style="padding-top:20px;">Note: Paste image from clipboard here to generate screenshot of widget for docs.</p>
       <button class="btn btn-xs btn-default btn-uploadscreenshot" style="margin-bottom:5px;">Upload Screenshot</button>
       <div id="editor-box" class="target" contenteditable="true">
       </div>
@@ -984,11 +984,11 @@ var generateworkspaceDocs = function() {
       
       <p>$pubsub-desc</p>
 
-      <h2>ChiliPeppr workspace Docs</h2>
+      <h2>ChiliPeppr Widget Docs</h2>
 
       <p>The content below is auto generated as long as you follow the standard
-      template for a ChiliPeppr workspace from 
-      <a href="">http://github.com/chilipeppr/workspace-template</a>.</p>
+      template for a ChiliPeppr widget from 
+      <a href="">http://github.com/chilipeppr/widget-template</a>.</p>
       
       <table class="table table-bordered table-striped">
       <tbody>
@@ -1046,10 +1046,10 @@ var generateworkspaceDocs = function() {
   
   <h2>Example Code for chilipeppr.load() Statement</h2>
   <p>You can use the code below as a starting point for instantiating
-  this workspace inside a workspace or from another workspace. The key is that
-  you need to load your workspace inlined into a div so the DOM can parse
+  this widget inside a workspace or from another widget. The key is that
+  you need to load your widget inlined into a div so the DOM can parse
   your HTML, CSS, and Javascript. Then you use cprequire() to find
-  your workspace's Javascript and get back the instantiated instance of it.</p>
+  your widget's Javascript and get back the instantiated instance of it.</p>
   
   <pre><code class="language-js" 
   data-lang="js">$cp-load-stmt</code></pre>
@@ -1058,12 +1058,12 @@ var generateworkspaceDocs = function() {
 
   <div class="pubsub-interface hidden">
       <h2>Interface Implementation</h2>
-      <p>This workspace/element implements an interface specification. Since 
+      <p>This widget/element implements an interface specification. Since 
       Javascript does not have the notion of interfaces like the way languages 
       such as Java have native support for interfaces, ChiliPeppr has defined 
-      its own loose version of an interface. If this workspace/element has 
+      its own loose version of an interface. If this widget/element has 
       implemented an interface, it means it has followed a general standard 
-      set of pubsub signals that other workspaces/elements should follow as well 
+      set of pubsub signals that other widgets/elements should follow as well 
       to make them swappable.</p>
       
   <table id="com-chilipeppr-elem-pubsubviewer-interface" class="table table-bordered table-striped">
@@ -1080,7 +1080,7 @@ var generateworkspaceDocs = function() {
   </div>
   
   <h2>Publish</h2>
-  <p>This workspace/element publishes the following signals. These signals are owned by this workspace/element and are published to all objects inside the ChiliPeppr environment that listen to them via the chilipeppr.subscribe(signal, callback) method.</p>
+  <p>This widget/element publishes the following signals. These signals are owned by this widget/element and are published to all objects inside the ChiliPeppr environment that listen to them via the chilipeppr.subscribe(signal, callback) method.</p>
   <table id="com-chilipeppr-elem-pubsubviewer-pub" class="table table-bordered table-striped">
       <thead>
           <tr>
@@ -1091,14 +1091,14 @@ var generateworkspaceDocs = function() {
       <tbody>
           
       $row-publish-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-publish-end    
       
       </tbody>
   </table>
 
   <h2>Subscribe</h2>
-  <p>This workspace/element subscribes to the following signals. These signals are owned by this workspace/element. Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method.</p>
+  <p>This widget/element subscribes to the following signals. These signals are owned by this widget/element. Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method.</p>
   <table id="com-chilipeppr-elem-pubsubviewer-sub" class="table table-bordered table-striped">
       <thead>
           <tr>
@@ -1109,14 +1109,14 @@ var generateworkspaceDocs = function() {
       <tbody>
           
       $row-subscribe-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-subscribe-end    
       
       </tbody>
   </table>
 
   <h2>Foreign Publish</h2>
-  <p>This workspace/element publishes to the following signals that are owned by other objects.</p>
+  <p>This widget/element publishes to the following signals that are owned by other objects.</p>
   <table id="com-chilipeppr-elem-pubsubviewer-foreignpub" class="table table-bordered table-striped">
       <thead>
           <tr>
@@ -1127,14 +1127,14 @@ var generateworkspaceDocs = function() {
       <tbody>
           
       $row-foreign-publish-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-foreign-publish-end    
       
       </tbody>
   </table>
 
   <h2>Foreign Subscribe</h2>
-  <p>This workspace/element subscribes to the following signals owned by other objects.</p>
+  <p>This widget/element subscribes to the following signals owned by other objects.</p>
   <table id="com-chilipeppr-elem-pubsubviewer-foreignsub" class="table table-bordered table-striped">
       <thead>
           <tr>
@@ -1145,7 +1145,7 @@ var generateworkspaceDocs = function() {
       <tbody>
       
       $row-foreign-subscribe-start    
-      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No signals defined in this widget/element)</td></tr>
       $row-foreign-subscribe-end    
       
       </tbody>
@@ -1153,7 +1153,7 @@ var generateworkspaceDocs = function() {
   
   <h2>Methods / Properties</h2>
   <p>The list below shows, in order, the methods and properties that exist
-  inside this workspace/element.</p>
+  inside this widget/element.</p>
   <table id="com-chilipeppr-elem-pubsubviewer-foreignsub" class="table table-bordered table-striped">
       <thead>
           <tr>
@@ -1165,7 +1165,7 @@ var generateworkspaceDocs = function() {
       <tbody>
           
       $row-methods-start
-      <tr><td colspan="2">(No methods or properties defined in this workspace/element)</td></tr>
+      <tr><td colspan="2">(No methods or properties defined in this widget/element)</td></tr>
       $row-methods-end
       
       </tbody>
@@ -1173,18 +1173,18 @@ var generateworkspaceDocs = function() {
   
 </div>
 
-  <h2>Structure of a workspace</h2>
-  <p>The standard structure of a ChiliPeppr workspace includes making 
-  your workspace out of widjet.js, widjet.css, and workspace.html. The final
-  workspace has everything inlined into one HTML file. It is important
+  <h2>Structure of a Widget</h2>
+  <p>The standard structure of a ChiliPeppr widget includes making 
+  your widget out of widjet.js, widjet.css, and widget.html. The final
+  widget has everything inlined into one HTML file. It is important
   to have everything inlined so the chilipeppr.load() method succeeds
   because it only loads a single URL.
   </p>
       
   <p>When this NodeJs page is executed it will combine 
-  your workspace.js, workspace.css, and workspace.html files into a monolithic 
-  HTML file called auto-generated-workspace.html. You should use this file
-  as your final workspace inlined file.</p>
+  your widget.js, widget.css, and widget.html files into a monolithic 
+  HTML file called auto-generated-widget.html. You should use this file
+  as your final widget inlined file.</p>
   
   <p>This NodeJs script
   will also push your updated content to your forked repo on Github 
@@ -1198,14 +1198,14 @@ var generateworkspaceDocs = function() {
 `;
 
   /*
-  var workspaceUrl = 'http://' +
+  var widgetUrl = 'http://' +
     process.env.C9_PROJECT + '-' + process.env.C9_USER +
-    '.c9users.io/workspace.html';
+    '.c9users.io/widget.html';
   var testUrl = 'https://preview.c9users.io/' +
     process.env.C9_USER + '/' +
-    process.env.C9_PROJECT + '/workspace.html';
+    process.env.C9_PROJECT + '/widget.html';
   var testUrlNoSsl = 'http://' + process.env.C9_PROJECT +
-    '-' + process.env.C9_USER + '.c9users.io/workspace.html';
+    '-' + process.env.C9_USER + '.c9users.io/widget.html';
   var editUrl = 'http://ide.c9.io/' +
     process.env.C9_USER + '/' +
     process.env.C9_PROJECT;
@@ -1213,9 +1213,9 @@ var generateworkspaceDocs = function() {
   */
   var urls = getAllUrls();
   
-  html = html.replace(/\$pubsub-id/g, workspace.id);
-  html = html.replace(/\$pubsub-name/g, workspace.name);
-  html = html.replace(/\$pubsub-desc/g, workspace.desc);
+  html = html.replace(/\$pubsub-id/g, widget.id);
+  html = html.replace(/\$pubsub-name/g, widget.name);
+  html = html.replace(/\$pubsub-desc/g, widget.desc);
 
   /*
   html = html.replace(/\$pubsub-url/g, github.rawurl);
@@ -1225,43 +1225,43 @@ var generateworkspaceDocs = function() {
   html = html.replace(/\$pubsub-testurl/g, testUrl);
   */
   
-  html = html.replace(/\$pubsub-url/g, workspace.url);
-  html = html.replace(/\$pubsub-fiddleurl/g, workspace.fiddleurl);
-  html = html.replace(/\$pubsub-github/g, workspace.githuburl);
+  html = html.replace(/\$pubsub-url/g, widget.url);
+  html = html.replace(/\$pubsub-fiddleurl/g, widget.fiddleurl);
+  html = html.replace(/\$pubsub-github/g, widget.githuburl);
   html = html.replace(/\$pubsub-testurlnossl/g, urls.testNoSsl);
-  html = html.replace(/\$pubsub-testurl/g, workspace.testurl);
+  html = html.replace(/\$pubsub-testurl/g, widget.testurl);
   
   var cpload = generateCpLoadStmt();
   html = html.replace(/\$cp-load-stmt/g, cpload);
   
   // do the properties and methods
   var s = "";
-  for (var key in workspace) {
-    var obj = workspace[key];
+  for (var key in widget) {
+    var obj = widget[key];
     s += '<tr><td>' + key +
       '</td><td>' + typeof obj +
       '</td><td>';
-    s += workspaceDocs[key].descHtml;
+    s += widgetDocs[key].descHtml;
     s += '</td></tr>';
   }
   html = html.replace(/\$row-methods-start[\s\S]+?\$row-methods-end/g, s);
 
   // now do pubsub signals
   var s;
-  s = appendKeyVal(workspace.publish);
+  s = appendKeyVal(widget.publish);
   html = html.replace(/\$row-publish-start[\s\S]+?\$row-publish-end/, s);
-  s = appendKeyVal(workspace.subscribe);
+  s = appendKeyVal(widget.subscribe);
   html = html.replace(/\$row-subscribe-start[\s\S]+?\$row-subscribe-end/g, s);
-  s = appendKeyVal(workspace.foreignPublish);
+  s = appendKeyVal(widget.foreignPublish);
   html = html.replace(/\$row-foreign-publish-start[\s\S]+?\$row-foreign-publish-end/, s);
-  s = appendKeyVal(workspace.foreignSubscribe);
+  s = appendKeyVal(widget.foreignSubscribe);
   html = html.replace(/\$row-foreign-subscribe-start[\s\S]+?\$row-foreign-subscribe-end/g, s);
   
-  // debug source for workspace
+  // debug source for widget
   /*
   html = html.replace(
-    /\$fullworkspace/, 
-    workspace.toString().replace(/\n/g, "<br>").replace(/ /g, "&nbsp;")
+    /\$fullwidget/, 
+    widget.toString().replace(/\n/g, "<br>").replace(/ /g, "&nbsp;")
   );
   */
 
@@ -1290,22 +1290,22 @@ var appendKeyVal = function(data, id) {
       txt = txt.replace(/\n\s*\n\s*/g, "<br><br>");
       
       str += '<tr valign="top"><td>/' + 
-        workspace.id + "" + 
+        widget.id + "" + 
         key + 
         '</td><td>' +
         txt + 
         '</td></tr>';
     }
   } else {
-    str = '<tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>';
+    str = '<tr><td colspan="2">(No signals defined in this widget/element)</td></tr>';
   }
   return str;
 }
 
 var generateCpLoadStmt = function() {
   
-  // eval the workspace.js so we have lots of data on it
-  evalworkspaceJs();
+  // eval the widget.js so we have lots of data on it
+  evalWidgetJs();
   
   // see if we have a backing github url
   // if we do, use it for the chilipeppr.load()
@@ -1319,12 +1319,12 @@ var generateCpLoadStmt = function() {
     var url = github.url;
     
     // since we have a github url, use the raw version
-    // wa want something like https://raw.githubusercontent.com/chilipeppr/eagle-brd-import/master/auto-generated-workspace.html";
+    // wa want something like https://raw.githubusercontent.com/chilipeppr/eagle-brd-import/master/auto-generated-widget.html";
     var rawurl = github.rawurl; //= url.replace(/\/github.com\//i, "/raw.githubusercontent.com/");
-    //rawurl += '/master/auto-generated-workspace.html';
+    //rawurl += '/master/auto-generated-widget.html';
     
     // create a camel case version of this name. split on dash
-    var arr = workspace.id.replace(/com-chilipeppr/i, "").split(/-/g);
+    var arr = widget.id.replace(/com-chilipeppr/i, "").split(/-/g);
     // now capitalize the first letter of each word
     for (var i in arr) {
       var s = arr[i];
@@ -1334,20 +1334,20 @@ var generateCpLoadStmt = function() {
     var idCamelCase = arr.join("");
     
     js = '' +
-      '// Inject new div to contain workspace or use an existing div with an ID\n' +
+      '// Inject new div to contain widget or use an existing div with an ID\n' +
       '$("body").append(\'<\' + \'div id="myDiv' + idCamelCase + '"><\' + \'/div>\');\n\n' +
       'chilipeppr.load(\n' +
       '  "#myDiv' + idCamelCase + '",\n' +
       '  "' + rawurl + '",\n' +
       '  function() {\n' +
-      '    // Callback after workspace loaded into #myDiv' + idCamelCase + '\n' +
-      '    // Now use require.js to get reference to instantiated workspace\n' +
+      '    // Callback after widget loaded into #myDiv' + idCamelCase + '\n' +
+      '    // Now use require.js to get reference to instantiated widget\n' +
       '    cprequire(\n' +
-      //'      "inline:com-chilipeppr-workspace-yourname", // the id you gave your workspace\n' +
-      '      ["' + id + '"], // the id you gave your workspace\n' +
+      //'      "inline:com-chilipeppr-widget-yourname", // the id you gave your widget\n' +
+      '      ["' + id + '"], // the id you gave your widget\n' +
       '      function(myObj' + idCamelCase + ') {\n' +
-      '        // Callback that is passed reference to the newly loaded workspace\n' +
-      '        console.log("' + workspace.name + ' just got loaded.", myObj' + idCamelCase + ');\n' +
+      '        // Callback that is passed reference to the newly loaded widget\n' +
+      '        console.log("' + widget.name + ' just got loaded.", myObj' + idCamelCase + ');\n' +
       '        myObj' + idCamelCase + '.init();\n' +
       '      }\n' +
       '    );\n' +
@@ -1380,10 +1380,10 @@ var pushToGithubSync = function(message) {
   var proc = require('child_process');
 
   if(! message)
-    message = "Made some changes to ChiliPeppr workspace using Cloud9";
+    message = "Made some changes to ChiliPeppr widget using Cloud9";
   
   // git add *
-  // git commit -m "Made some changes to ChiliPeppr workspace using Cloud9"
+  // git commit -m "Made some changes to ChiliPeppr widget using Cloud9"
   // git push
   var stdout = "";
   stdout += "> git add *\n";
@@ -1401,7 +1401,7 @@ var pushToGithubAsync = function() {
   exec('git add *', function(error1, stdout1, stderr1) {
     // command output is in stdout
     console.log("stdout:", stdout1, "stderr:", stderr1);
-    exec('bash -c "git commit -m \\"Made some changes to ChiliPeppr workspace using Cloud9\\""', function(error2, stdout2, stderr2) {
+    exec('bash -c "git commit -m \\"Made some changes to ChiliPeppr widget using Cloud9\\""', function(error2, stdout2, stderr2) {
       // command output is in stdout
       console.log("stdout:", stdout2, "stderr:", stderr2);
       exec('git push', function(error3, stdout3, stderr3) {
@@ -1417,7 +1417,7 @@ var pullFromGithubSync = function() {
   var proc = require('child_process');
   
   // git add *
-  // git commit -m "Made some changes to ChiliPeppr workspace using Cloud9"
+  // git commit -m "Made some changes to ChiliPeppr widget using Cloud9"
   // git push
   var stdout = "";
   stdout += "> git pull\n";
@@ -1431,14 +1431,14 @@ var mergeFromCpTemplateRepo = function() {
   var proc = require('child_process');
   
   // git add *
-  // git commit -m "Made some changes to ChiliPeppr workspace using Cloud9"
+  // git commit -m "Made some changes to ChiliPeppr widget using Cloud9"
   // git push
   var stdout = "";
   stdout += pushToGithubSync();
   stdout += "> git checkout master\n";
-  stdout += "> git pull https://github.com/chilipeppr/workspace-template.git\n";
+  stdout += "> git pull https://github.com/chilipeppr/widget-template.git\n";
   try {
-    stdout += proc.execSync('git checkout master; git pull https://github.com/chilipeppr/workspace-template.git', { encoding: 'utf8' });
+    stdout += proc.execSync('git checkout master; git pull https://github.com/chilipeppr/widget-template.git', { encoding: 'utf8' });
   } catch (ex) {
     console.log("error on merge:", ex);
     stdout += "Tiny little error on merge.\n";
@@ -1460,30 +1460,30 @@ var forkYourOwnRepo = function() {
 }
 
 var generateInlinedFile = function() {
-  // We are developing a workspace with 3 main files of css, html, and js
+  // We are developing a widget with 3 main files of css, html, and js
   // but ChiliPeppr really wants one monolithic file so we have to generate
   // it to make things clean when chilipeppr.load() is called with a single
-  // URL to this workspace. This file should get checked into Github and should
+  // URL to this widget. This file should get checked into Github and should
   // be the file that is loaded by ChiliPeppr.
   var fileCss = fs.readFileSync("workspace.css").toString();
   var fileHtml = fs.readFileSync("workspace.html").toString();
-  var fileJs = workspaceSrc; // fs.readFileSync("workspace.js").toString();
+  var fileJs = widgetSrc; // fs.readFileSync("widget.js").toString();
 
   // auto fill title if they're asking for it
-  if (workspace) {
+  if (widget) {
     var re = /<title>[\s\r\n]*<!--\(auto-fill by runme\.js-->[\s\r\n]*<\/title>/i;
     if (fileHtml.match(re)) {
-    fileHtml = fileHtml.replace(re, "<title>" + workspace.name + "</title>");
+    fileHtml = fileHtml.replace(re, "<title>" + widget.name + "</title>");
     console.log("Swapped in title for final HTML page.");
     } else {
       console.log('Went to swap in title, but the auto fill comment not found.');
     }
   } else {
-    console.log("Could not auto-fill title of HTML page because workspace object not defined.");
+    console.log("Could not auto-fill title of HTML page because widget object not defined.");
   }
 
   // now inline css
-  var re = /<!-- workspace.css[\s\S]*?end workspace.css -->/i;
+  var re = /<!-- widget.css[\s\S]*?end widget.css -->/i;
   fileHtml = fileHtml.replace(re,
     '<style type=\'text/css\'>\n' +
     fileCss +
@@ -1491,7 +1491,7 @@ var generateInlinedFile = function() {
   );
 
   // now inline javascript
-  var re = /<!-- workspace.js[\s\S]*?end workspace.js -->/i;
+  var re = /<!-- widget.js[\s\S]*?end widget.js -->/i;
   fileHtml = fileHtml.replace(re,
     '<script type=\'text/javascript\'>\n' +
     '    //<![CDATA[\n' +
@@ -1500,8 +1500,8 @@ var generateInlinedFile = function() {
   );
 
   // now write out the auto-gen file
-  fs.writeFileSync("auto-generated-workspace.html", fileHtml);
-  console.log("Updated auto-generated-workspace.html");
+  fs.writeFileSync("auto-generated-widget.html", fileHtml);
+  console.log("Updated auto-generated-widget.html");
 
 }
 
@@ -1509,9 +1509,9 @@ var getMainPage = function() {
   var html = "";
 
   /*
-  var workspaceUrl = 'http://' +
+  var widgetUrl = 'http://' +
     process.env.C9_PROJECT + '-' + process.env.C9_USER +
-    '.c9users.io/workspace.html';
+    '.c9users.io/widget.html';
   var editUrl = 'http://ide.c9.io/' +
     process.env.C9_USER + '/' +
     process.env.C9_PROJECT;
@@ -1520,13 +1520,13 @@ var getMainPage = function() {
   */
 
   html = '<html><body>' +
-    'Your ChiliPeppr workspace can be tested at ' +
+    'Your ChiliPeppr Widget can be tested at ' +
     '<a target="_blank" href="' + urls.test + '">' +
     urls.test + '</a><br><br>\n\n' +
-    'Your ChiliPeppr workspace can be edited at ' +
+    'Your ChiliPeppr Widget can be edited at ' +
     '<a target="_blank" href="' + urls.edit + '">' +
     urls.edit + '</a><br><br>\n\n' +
-    'Your ChiliPeppr workspace Github Url for forking ' +
+    'Your ChiliPeppr Widget Github Url for forking ' +
     '<a target="_blank" href="' + url.github + '">' +
     url.github + '</a><br><br>\n\n' +
     'C9_PROJECT: ' + process.env.C9_PROJECT + '<br>\n' +
@@ -1534,17 +1534,17 @@ var getMainPage = function() {
     '';
 
   generateInlinedFile();
-  html += '<br><br>Just updated your auto-generated-workspace.html file.';
+  html += '<br><br>Just updated your auto-generated-widget.html file.';
     
   //pushToGithub();
   //html += '<br><br>Just pushed updates to your Github repo.';
   
   var jsLoad = generateCpLoadStmt();
-  html += '<br><br>Sample chilipeppr.load() Javascript for Your workspace\n<pre>' +
+  html += '<br><br>Sample chilipeppr.load() Javascript for Your Widget\n<pre>' +
     jsLoad +
     '</pre>\n';
     
-  var docs = generateworkspaceDocs();
+  var docs = generateWidgetDocs();
   html += '<br><br>Docs\n<pre>' +
     docs +
     '</pre>\n';
@@ -1566,7 +1566,7 @@ var getGithubUrl = function() {
     // see what format we got back
     if (stdout.match(/\.git/)) {
         
-        // format is git@github.com:chilipeppr/workspace-xbox.git
+        // format is git@github.com:chilipeppr/widget-xbox.git
         var re = /.*github.com:/i;
         var url = stdout.replace(re, "");
         url = url.replace(/.git[\s\S]*$/i, ""); // remove end
@@ -1575,17 +1575,17 @@ var getGithubUrl = function() {
         url = "http://github.com/" + url;
         
         var rawurl = url.replace(/\/github.com\//i, "/raw.githubusercontent.com/");
-        rawurl += '/master/auto-generated-workspace.html';
+        rawurl += '/master/auto-generated-widget.html';
         
     } else {
         
-        // format is https://github.com/chilipeppr/workspace-xbox
+        // format is https://github.com/chilipeppr/widget-xbox
         // console.log("format has no .git in it");
         url = stdout;
         url = url.replace(/[\s]*$/i, ""); // remove end
         // console.log(url);
         var rawurl = url.replace(/\/github.com\//i, "/raw.githubusercontent.com/");
-        rawurl += '/master/auto-generated-workspace.html';
+        rawurl += '/master/auto-generated-widget.html';
     }
     var ret = {
         stdout: stdout,
@@ -1618,17 +1618,17 @@ var getAllUrls = function() {
     // are we in cloud9 or aws?
     /*
     For new AWS Cloud9 version
-    chilipeppr.load() URL	https://raw.githubusercontent.com/chilipeppr/workspace-xbox/master/auto-generated-workspace.html
+    chilipeppr.load() URL	https://raw.githubusercontent.com/chilipeppr/widget-xbox/master/auto-generated-widget.html
     Edit URL	            https://us-west-2.console.aws.amazon.com/cloud9/ide/83c03ab3f6f9431aa813882decbfc4aa
-    Github URL	            https://github.com/chilipeppr/workspace-xbox
-    Test URL	            https://vfs.cloud9.us-west-2.amazonaws.com/vfs/83c03ab3f6f9431aa813882decbfc4aa/preview/workspace-xbox/workspace.html
+    Github URL	            https://github.com/chilipeppr/widget-xbox
+    Test URL	            https://vfs.cloud9.us-west-2.amazonaws.com/vfs/83c03ab3f6f9431aa813882decbfc4aa/preview/widget-xbox/widget.html
     Test URL No SSL	
     
     For Original Cloud9
-    chilipeppr.load() URL   http://raw.githubusercontent.com/chilipeppr/workspace-xbox/master/auto-generated-workspace.html
-    Edit URL                http://ide.c9.io/chilipeppr/workspace-xbox
-    Github URL              http://github.com/chilipeppr/workspace-xbox
-    Test URL                https://preview.c9users.io/chilipeppr/workspace-xbox/workspace.html
+    chilipeppr.load() URL   http://raw.githubusercontent.com/chilipeppr/widget-xbox/master/auto-generated-widget.html
+    Edit URL                http://ide.c9.io/chilipeppr/widget-xbox
+    Github URL              http://github.com/chilipeppr/widget-xbox
+    Test URL                https://preview.c9users.io/chilipeppr/widget-xbox/widget.html
     Test URL No SSL	
 
     */
@@ -1640,28 +1640,28 @@ var getAllUrls = function() {
         
         // https://us-west-2.console.aws.amazon.com/cloud9/ide/83c03ab3f6f9431aa813882decbfc4aa
         ret.edit = 'https://' + region + '.console.aws.amazon.com/cloud9/ide/' + process.env.C9_PID;
-        // https://vfs.cloud9.us-west-2.amazonaws.com/vfs/83c03ab3f6f9431aa813882decbfc4aa/preview/workspace-xbox/workspace.html
+        // https://vfs.cloud9.us-west-2.amazonaws.com/vfs/83c03ab3f6f9431aa813882decbfc4aa/preview/widget-xbox/widget.html
         ret.test = 'https://vfs.cloud9.' + region + '.amazonaws.com/vfs/' + 
             process.env.C9_PID + '/preview/' + 
-            process.env.C9_PROJECT + '/workspace.html';
-        // http://83c03ab3f6f9431aa813882decbfc4aa.vfs.cloud9.us-west-2.amazonaws.com/workspace.html
-        ret.testNoSsl = 'http://' + process.env.C9_PID + '.vfs.cloud9.' + region + '.amazonaws.com/workspace.html';
+            process.env.C9_PROJECT + '/widget.html';
+        // http://83c03ab3f6f9431aa813882decbfc4aa.vfs.cloud9.us-west-2.amazonaws.com/widget.html
+        ret.testNoSsl = 'http://' + process.env.C9_PID + '.vfs.cloud9.' + region + '.amazonaws.com/widget.html';
         // http://83c03ab3f6f9431aa813882decbfc4aa.vfs.cloud9.us-west-2.amazonaws.com/
         ret.runmeHomepage = 'https://' + process.env.C9_PID + '.vfs.cloud9.' + region + '.amazonaws.com/';
     } else {
         // we are in original cloud9
         // var ret.edit = 'http://' +
         //     process.env.C9_PROJECT + '-' + process.env.C9_USER +
-        //     '.c9users.io/workspace.html';
+        //     '.c9users.io/widget.html';
         ret.edit = 'http://ide.c9.io/' +
             process.env.C9_USER + '/' +
             process.env.C9_PROJECT;
         ret.test = 'https://preview.c9users.io/' +
             process.env.C9_USER + '/' +
-            process.env.C9_PROJECT + '/workspace.html';
+            process.env.C9_PROJECT + '/widget.html';
         ret.testNoSsl = 'http://' + process.env.C9_PROJECT +
-            '-' + process.env.C9_USER + '.c9users.io/workspace.html';
-        // https://workspace-xbox-chilipeppr.c9users.io/
+            '-' + process.env.C9_USER + '.c9users.io/widget.html';
+        // https://widget-xbox-chilipeppr.c9users.io/
         ret.runmeHomepage = 'https://' + process.env.C9_PROJECT +
             '-' + process.env.C9_USER + '.c9users.io/';
     }
@@ -1690,7 +1690,7 @@ var whichAwsRegion = function() {
     
     // we can figure out the aws region by looking at the arn value
     // arn:aws:cloudformation:us-west-2:381976811276:stack/aws-cloud9-workspace-tinyg-820f668385554da2bde72957a9078cdc/e0c47e00-f3ea-11e7-9ccf-503aca41a08d
-    // arn:aws:cloudformation:us-west-2:381976811276:stack/aws-cloud9-workspace-xbox-83c03ab3f6f9431aa813882decbfc4aa/c4603630-f18a-11e7-a76d-50a686fc37d2
+    // arn:aws:cloudformation:us-west-2:381976811276:stack/aws-cloud9-widget-xbox-83c03ab3f6f9431aa813882decbfc4aa/c4603630-f18a-11e7-a76d-50a686fc37d2
     // arn:aws:cloudformation:us-east-1:381976811276:stack/awseb-e-xykh2cx2kq-stack/759041b0-12ac-11e3-9b45-50e24162947c
     // arn:aws:cloudformation:us-east-2:381976811276:stack/aws-cloud9-workspace-eagle-da906241afb9471ba097583389a735a0/d1fbd9d0-f3f5-11e7-97bb-500cef930c1e
 
