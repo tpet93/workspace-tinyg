@@ -5,45 +5,44 @@ This is a workspace for ChiliPeppr's Hardware Fiddle. It is geared towards CNC m
 
 ## ChiliPeppr Workspace / TinyG
 
-All ChiliPeppr workspaces/widgets/elements are defined using cpdefine() which is a method
+All ChiliPeppr workspaces/elements are defined using cpdefine() which is a method
 that mimics require.js. Each defined object must have a unique ID so it does
-not conflict with other ChiliPeppr objects.
+not conflict with other ChiliPeppr workspaces.
 
 | Item                  | Value           |
 | -------------         | ------------- | 
 | ID                    | com-chilipeppr-workspace-tinyg |
 | Name                  | Workspace / TinyG |
 | Description           | This is a workspace for ChiliPeppr's Hardware Fiddle. It is geared towards CNC machines using TinyG. |
-| chilipeppr.load() URL | http://raw.githubusercontent.com/chilipeppr/workspace-tinyg/master/auto-generated-workspace.html |
-| Edit URL              | http://ide.c9.io/chilipeppr/workspace-tinyg |
-| Github URL            | http://github.com/chilipeppr/workspace-tinyg |
-| Test URL              | https://preview.c9users.io/chilipeppr/workspace-tinyg/workspace.html |
+| chilipeppr.load() URL | https://raw.githubusercontent.com/tpet93/workspace-tinyg/master/auto-generated-workspace.html |
+| Edit URL              | https://us-east-2.console.aws.amazon.com/cloud9/ide/44c06a444b1a4252844c2090f03fc646 |
+| Github URL            | https://github.com/tpet93/workspace-tinyg |
+| Test URL              | https://vfs.cloud9.us-east-2.amazonaws.com/vfs/44c06a444b1a4252844c2090f03fc646/preview/TonyCloud9/workspace.html |
 
 ## Example Code for chilipeppr.load() Statement
 
 You can use the code below as a starting point for instantiating this workspace 
-from ChiliPeppr's Edit Boot Script dialog box. The key is that you need to load 
-your workspace inlined into the standard #pnlWorkspace div so the DOM can parse your HTML, CSS, and 
+inside a workspace or from another workspace. The key is that you need to load 
+your workspace inlined into a div so the DOM can parse your HTML, CSS, and 
 Javascript. Then you use cprequire() to find your workspace's Javascript and get 
-back the instance of it to init() it.
+back the instance of it.
 
 ```javascript
-// This code should be pasted into the ChiliPeppr Edit Boot Javascript dialog box
-// located in the upper right corner of any chilipeppr.com page.
-// The ChiliPeppr environment has a standard div called #pnlWorkspace that
-// this workspace should be loaded into.
+// Inject new div to contain workspace or use an existing div with an ID
+$("body").append('<' + 'div id="myDivWorkspaceTinyg"><' + '/div>');
+
 chilipeppr.load(
-  "#pnlWorkspace",
-  "http://raw.githubusercontent.com/chilipeppr/workspace-tinyg/master/auto-generated-workspace.html",
+  "#myDivWorkspaceTinyg",
+  "https://raw.githubusercontent.com/tpet93/workspace-tinyg/master/auto-generated-workspace.html",
   function() {
-    // Callback after workspace loaded into #pnlWorkspace
+    // Callback after workspace loaded into #myDivWorkspaceTinyg
     // Now use require.js to get reference to instantiated workspace
     cprequire(
       ["inline:com-chilipeppr-workspace-tinyg"], // the id you gave your workspace
-      function(myWorkspaceTinyg) {
+      function(myObjWorkspaceTinyg) {
         // Callback that is passed reference to the newly loaded workspace
-        console.log("Workspace / TinyG just got loaded.", myWorkspaceTinyg);
-        myWorkspaceTinyg.init();
+        console.log("Workspace / TinyG just got loaded.", myObjWorkspaceTinyg);
+        myObjWorkspaceTinyg.init();
       }
     );
   }
@@ -53,8 +52,7 @@ chilipeppr.load(
 
 ## Publish
 
-This workspace publishes the following signals. These signals are owned by this workspace and are published to 
-all objects inside the ChiliPeppr environment that listen to them via the 
+This workspace/element publishes the following signals. These signals are owned by this workspace/element and are published to all objects inside the ChiliPeppr environment that listen to them via the 
 chilipeppr.subscribe(signal, callback) method. 
 To better understand how ChiliPeppr's subscribe() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
@@ -66,14 +64,13 @@ To better understand how ChiliPeppr's subscribe() method works see amplify.js's 
           </tr>
       </thead>
       <tbody>
-      <tr><td colspan="2">(No signals defined in this workspace)</td></tr>    
+      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>    
       </tbody>
   </table>
 
 ## Subscribe
 
-This workspace subscribes to the following signals. These signals are owned by this workspace. 
-Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method. 
+This workspace/element subscribes to the following signals. These signals are owned by this workspace/element. Other objects inside the ChiliPeppr environment can publish to these signals via the chilipeppr.publish(signal, data) method. 
 To better understand how ChiliPeppr's publish() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-sub" class="table table-bordered table-striped">
@@ -84,13 +81,13 @@ To better understand how ChiliPeppr's publish() method works see amplify.js's do
           </tr>
       </thead>
       <tbody>
-      <tr><td colspan="2">(No signals defined in this workspace)</td></tr>    
+      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>    
       </tbody>
   </table>
 
 ## Foreign Publish
 
-This workspace publishes to the following signals that are owned by other objects. 
+This workspace/element publishes to the following signals that are owned by other objects. 
 To better understand how ChiliPeppr's subscribe() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-foreignpub" class="table table-bordered table-striped">
@@ -101,13 +98,13 @@ To better understand how ChiliPeppr's subscribe() method works see amplify.js's 
           </tr>
       </thead>
       <tbody>
-      <tr><td colspan="2">(No signals defined in this workspace)</td></tr>    
+      <tr><td colspan="2">(No signals defined in this workspace/element)</td></tr>    
       </tbody>
   </table>
 
 ## Foreign Subscribe
 
-This workspace publishes to the following signals that are owned by other objects.
+This workspace/element publishes to the following signals that are owned by other objects.
 To better understand how ChiliPeppr's publish() method works see amplify.js's documentation at http://amplifyjs.com/api/pubsub/
 
   <table id="com-chilipeppr-elem-pubsubviewer-foreignsub" class="table table-bordered table-striped">
@@ -124,7 +121,7 @@ To better understand how ChiliPeppr's publish() method works see amplify.js's do
 
 ## Methods / Properties
 
-The table below shows, in order, the methods and properties inside the workspace object.
+The table below shows, in order, the methods and properties inside the workspace/element.
 
   <table id="com-chilipeppr-elem-methodsprops" class="table table-bordered table-striped">
       <thead>
@@ -135,7 +132,7 @@ The table below shows, in order, the methods and properties inside the workspace
           </tr>
       </thead>
       <tbody>
-      <tr valign="top"><td>id</td><td>string</td><td>"com-chilipeppr-workspace-tinyg"<br><br>The ID of the widget. You must define this and make it unique.</td></tr><tr valign="top"><td>name</td><td>string</td><td>"Workspace / TinyG"</td></tr><tr valign="top"><td>desc</td><td>string</td><td>"This is a workspace for ChiliPeppr's Hardware Fiddle. It is geared towards CNC machines using TinyG."</td></tr><tr valign="top"><td>url</td><td>string</td><td>"http://raw.githubusercontent.com/chilipeppr/workspace-tinyg/master/auto-generated-workspace.html"</td></tr><tr valign="top"><td>fiddleurl</td><td>string</td><td>"http://ide.c9.io/chilipeppr/workspace-tinyg"</td></tr><tr valign="top"><td>githuburl</td><td>string</td><td>"http://github.com/chilipeppr/workspace-tinyg"</td></tr><tr valign="top"><td>testurl</td><td>string</td><td>"http://workspace-tinyg-chilipeppr.c9users.io/workspace.html"</td></tr><tr valign="top"><td>foreignSubscribe</td><td>object</td><td>Please see docs above.</td></tr><tr valign="top"><td>foreignPublish</td><td>object</td><td>Please see docs above.</td></tr><tr valign="top"><td>widgetConsole</td><td>object</td><td>Contains reference to the Console widget object. Hang onto the reference
+      <tr valign="top"><td>id</td><td>string</td><td>"com-chilipeppr-workspace-tinyg"<br><br>The ID of the widget. You must define this and make it unique.</td></tr><tr valign="top"><td>name</td><td>string</td><td>"Workspace / TinyG"</td></tr><tr valign="top"><td>desc</td><td>string</td><td>"This is a workspace for ChiliPeppr's Hardware Fiddle. It is geared towards CNC machines using TinyG."</td></tr><tr valign="top"><td>url</td><td>string</td><td>"https://raw.githubusercontent.com/tpet93/workspace-tinyg/master/auto-generated-workspace.html"</td></tr><tr valign="top"><td>fiddleurl</td><td>string</td><td>"https://us-east-2.console.aws.amazon.com/cloud9/ide/44c06a444b1a4252844c2090f03fc646"</td></tr><tr valign="top"><td>githuburl</td><td>string</td><td>"https://github.com/tpet93/workspace-tinyg"</td></tr><tr valign="top"><td>testurl</td><td>string</td><td>"https://vfs.cloud9.us-east-2.amazonaws.com/vfs/44c06a444b1a4252844c2090f03fc646/preview/TonyCloud9/workspace.html"</td></tr><tr valign="top"><td>foreignSubscribe</td><td>object</td><td>Please see docs above.</td></tr><tr valign="top"><td>foreignPublish</td><td>object</td><td>Please see docs above.</td></tr><tr valign="top"><td>widgetConsole</td><td>object</td><td>Contains reference to the Console widget object. Hang onto the reference
 so we can resize it when the window resizes because we want it to manually
 resize to fill the height of the browser so it looks clean.</td></tr><tr valign="top"><td>widgetSpjs</td><td>object</td><td>Contains reference to the Serial Port JSON Server object.</td></tr><tr valign="top"><td>init</td><td>function</td><td>function () <br><br>The workspace's init method. It loads the all the widgets contained in the workspace
 and inits them.</td></tr><tr valign="top"><td>getBillboard</td><td>function</td><td>function () <br><br>Returns the billboard HTML, CSS, and Javascript for this Workspace. The billboard
@@ -158,9 +155,9 @@ the serial port of your hardware like an Arduino or other microcontroller.
 
 You then create a workspace at ChiliPeppr.com that connects to your hardware 
 by starting from scratch or forking somebody else's
-workspace that is close to what you are after. Then you write widgets in
+workspace that is close to what you are after. Then you write workspaces in
 Javascript that interact with your hardware by forking the base template 
-widget or forking another widget that
+workspace or forking another workspace that
 is similar to what you are trying to build.
 
 ChiliPeppr is massively capable such that the workspaces for 
